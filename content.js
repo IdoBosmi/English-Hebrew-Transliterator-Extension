@@ -86,7 +86,6 @@ chrome.runtime.onMessage.addListener( async function (request, sender, sendRespo
                 const hebrewText = request.hebrewText;
 
                 const messageContentDiv = document.querySelector('.editable[aria-label="גוף ההודעה"]');
-    
                 if (messageContentDiv) {
                     // Get the current text
                     const currentText = messageContentDiv.innerText;
@@ -113,11 +112,8 @@ chrome.runtime.onMessage.addListener( async function (request, sender, sendRespo
             } else if (isGoogleDocsPage()) {
                 try {
                     const hebrewText = request.hebrewText;
-
                     // Copy the Hebrew text to the clipboard
                     await navigator.clipboard.writeText(hebrewText);
-
-                    
 
                     // Replace the selected text by pasting the new text
                     document.querySelector(".docs-texteventtarget-iframe").contentDocument.execCommand("paste");
