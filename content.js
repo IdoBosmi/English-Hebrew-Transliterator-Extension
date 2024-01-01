@@ -7,10 +7,11 @@ function isGmailComposePage() {
     return window.location.href.startsWith('https://mail.google.com/mail/u/0/#inbox?compose=');
 }
 
+function isGoogleDocsPage() {
+    return window.location.href.startsWith('https://docs.google.com/document/d/') && window.location.href.endsWith('/edit');
+}
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  console.log('Received message in content script:', request);
-
+chrome.runtime.onMessage.addListener( async function (request, sender, sendResponse) {
   if (request.action === 'getSelectedText') {
     // Get the currently focused element
     const focusedElement = document.activeElement;
@@ -32,13 +33,31 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 // Get the selected text
                 const selectedText = window.getSelection().toString();
                 console.log(selectedText);
-                sendResponse({ currentText, selectedText });
+                sendResponse({selectedText });
                 return true;
             } else {
                 console.error('Message content div not found');
             }
-        }
-        else{
+        } else if (isGoogleDocsPage()) {
+
+            try {
+                // Simulate copy action within the Google Docs iframe
+                document.querySelector(".docs-texteventtarget-iframe").contentDocument.execCommand("copy");
+                
+                // Retrieve selected text from the iframe's body
+                const selectedText = document.querySelector(".docs-texteventtarget-iframe").contentDocument.body.innerText;
+                
+                // Now 'selectedText' contains the text from the Google Docs iframe
+                console.log('Selected text in Google Docs:', selectedText);
+
+                sendResponse({ selectedText });
+                return true;
+                
+                // Perform your logic with the selected text as needed
+              } catch (error) {
+                console.error('Error with clipboard workaround:', error);
+              }
+        } else{
             console.error('No active input field found');
         }
     }
@@ -91,10 +110,27 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                     } else {
                         console.error('Message content div not found');
                     }
-            }
-            else{
+            } else if (isGoogleDocsPage()) {
+                try {
+                    const hebrewText = request.hebrewText;
+
+                    // Copy the Hebrew text to the clipboard
+                    await navigator.clipboard.writeText(hebrewText);
+
+                    
+
+                    // Replace the selected text by pasting the new text
+                    document.querySelector(".docs-texteventtarget-iframe").contentDocument.execCommand("paste");
+                    
+                    // Remove the copied text from the clipboard
+                    document.querySelector(".docs-texteventtarget-iframe").contentDocument.execCommand("delete");
+                  } catch (error) {
+                    console.error('Error with clipboard workaround:', error);
+                  }
+            } else{
                 console.error('No active input field found');
             }
         }
   }
 });
+
