@@ -1,4 +1,4 @@
-# English2Hebrew-Chrome-Extension
+# English-Hebrew-Transliterator-Extension
 
 ## Chrome Extension: Text Transliterator
 
