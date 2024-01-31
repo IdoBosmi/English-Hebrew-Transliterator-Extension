@@ -1,18 +1,18 @@
 document.addEventListener('DOMContentLoaded', function () {
-    chrome.runtime.sendMessage({ action: 'getHebrewMode' }, function (response) {
-      const isHebrewMode = response.isHebrewMode || false;
-      updateToggleState(isHebrewMode);
+    chrome.runtime.sendMessage({ action: 'getMode' }, function (response) {
+      const isOn = response.isOn || false;
+      updateToggleState(isOn);
     });
   
     document.getElementById('toggleInput').addEventListener('change', function () {
-      const isHebrewMode = this.checked;
-      updateToggleState(isHebrewMode);
-      chrome.runtime.sendMessage({ action: 'setHebrewMode', isHebrewMode });
+      const isOn = this.checked;
+      updateToggleState(isOn);
+      chrome.runtime.sendMessage({ action: 'setMode', isOn });
     });
   
-    function updateToggleState(isHebrewMode) {
+    function updateToggleState(isOn) {
         const input = document.getElementById('toggleInput');
-        input.checked = isHebrewMode;
+        input.checked = isOn;
     }
   });
   

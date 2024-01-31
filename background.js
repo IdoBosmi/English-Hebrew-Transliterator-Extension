@@ -1,31 +1,29 @@
 // background.js
-let isHebrewMode = false;
+let isOn = false;
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.action === 'getHebrewMode') {
-    sendResponse({ isHebrewMode });
-  } else if (request.action === 'setHebrewMode') {
-    isHebrewMode = request.isHebrewMode;
-  } else if (request.action === 'convertSelection') {
-    convertSelectionToHebrew();
+  if (request.action === 'getMode') {
+    sendResponse({ isOn });
+  } else if (request.action === 'setMode') {
+    isOn = request.isOn;
   }
 });
 
 chrome.commands.onCommand.addListener(function (command) {
   if (command === 'convertSelection') {
-        if (isHebrewMode) {
-            convertSelectionToHebrew();
+        if (isOn) {
+            convertSelection();
         }
   }
 });
 
-function convertSelectionToHebrew() {
+function convertSelection() {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, { action: 'getSelectedText' }, function (response) {
           if (response && response.selectedText) {
             const selectedText = response.selectedText;
-            const hebrewText = convertToHebrew(selectedText);
-            chrome.tabs.sendMessage(tabs[0].id, { action: 'replaceSelection', hebrewText });
+            const convertedText = transliterateText(selectedText);
+            chrome.tabs.sendMessage(tabs[0].id, { action: 'replaceSelection', convertedText });
           } else {
             console.error('Error: Invalid or missing response from content script');
           }
@@ -34,7 +32,7 @@ function convertSelectionToHebrew() {
       
 }
 
-function convertToHebrew(englishText) {
+function transliterateText(englishText) {
     const mapping = {
         a: 'ש',
         b: 'נ',
@@ -88,6 +86,32 @@ function convertToHebrew(englishText) {
         X: 'ס',
         Y: 'ט',
         Z: 'ז',
+        ש: 'a',
+        נ: 'b',
+        ב: 'c',
+        ג: 'd',
+        ק: 'e',
+        כ: 'f',
+        ע: 'g',
+        י: 'h',
+        ן: 'i',
+        ח: 'j',
+        ל: 'k',
+        ך: 'l',
+        צ: 'm',
+        מ: 'n',
+        ם: 'o',
+        פ: 'p',
+        '/': 'q',
+        ר: 'r',
+        ד: 's',
+        א: 't',
+        ו: 'u',
+        ה: 'v',
+        '\'': 'w',
+        ס: 'x',
+        ט: 'y',
+        ז: 'z'
       };
     
       return englishText.split('').map(char => mapping[char] || char).join('');
